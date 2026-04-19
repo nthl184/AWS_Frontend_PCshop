@@ -1,0 +1,32 @@
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+export const useCartStore = create(persist(
+  (set, get) => ({
+    items: [],
+
+    addItem: (product) => {
+      const exists = get().items.find(i => i.id === product.id)
+      if (exists) {
+        set({ items: get().items.map(i =>
+          i.id === product.id ? { ...i, qty: i.qty + 1 } : i
+        )})
+      } else {
+        set({ items: [...get().items, { ...product, qty: 1 }] })
+      }
+    },
+
+    removeItem: (id) =>
+      set({ items: get().items.filter(i => i.id !== id) }),
+
+    updateQty: (id, qty) =>
+      set({ items: get().items.map(i => i.id === id ? { ...i, qty } : i) }),
+
+    clearCart: () => set({ items: [] }),
+
+    get total() {
+      return get().items.reduce((sum, i) => sum + i.price * i.qty, 0)
+    }
+  }),
+  { name: 'pc-shop-cart' }
+))
