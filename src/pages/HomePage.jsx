@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { CATEGORIES } from "../db";
 import { useEffect, useState } from "react";
+import { CATEGORIES } from "../db";
 import { getProducts } from "../api/productAPI";
 import { useCart } from "../store/CartStore";
 import ProductCard from "../components/ProductCard";

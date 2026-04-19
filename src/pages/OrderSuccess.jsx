@@ -1,4 +1,4 @@
-import { fmt } from "../db";
+import { fmt } from "../constants";
 
 export default function OrderSuccessPage({ orderState, onNavigate }) {
   if (!orderState) return null;

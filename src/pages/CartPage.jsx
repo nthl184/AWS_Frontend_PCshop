@@ -1,4 +1,4 @@
-import { fmt } from "../db";
+import { fmt } from "../constants";
 import { useCart } from "../store/CartStore";
 import CartItem from "../components/CartItem";
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { fmt } from "../db";
+import { fmt } from "../constants";
 import { useCart } from "../store/CartStore";
 
 // Khi có BE thật: import { createOrder } from "../api/orderApi";
