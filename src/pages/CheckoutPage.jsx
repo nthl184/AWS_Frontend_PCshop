@@ -1,102 +1,212 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useCartStore } from '../store/CartStore'
-import { createOrder } from '../api/orderAPI'
+import { useState } from "react";
+import { fmt } from "../db";
+import { useCart } from "../store/CartStore";
 
-export default function CheckoutPage() {
-  const { items, total, clearCart } = useCartStore()
-  const navigate = useNavigate()
+// Khi có BE thật: import { createOrder } from "../api/orderApi";
 
-  const [form, setForm]       = useState({ name: '', phone: '', address: '' })
-  const [loading, setLoading] = useState(false)
-  const [error, setError]     = useState(null)
+const FIELDS = [
+  { key: "name",    label: "Full Name",          placeholder: "John Doe" },
+  { key: "phone",   label: "Phone Number",       placeholder: "0912 345 678" },
+  { key: "address", label: "Delivery Address",   placeholder: "123 ABC Street, District 1, Ho Chi Minh City" },
+];
 
-  const handleChange = e =>
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+export default function CheckoutPage({ onNavigate, onOrderSuccess, onShowToast }) {
+  const { cart, totalItems, totalPrice, dispatch } = useCart();
+  const [form, setForm]           = useState({ name: "", phone: "", address: "" });
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
     if (!form.name || !form.phone || !form.address) {
-      setError('Please fill in all fields')
-      return
+      onShowToast("Please fill in all fields", "error");
+      return;
     }
 
-    setLoading(true)
-    setError(null)
-
-    const payload = {
-      customer: form,
-      // Frontend chỉ gửi items + total lên Order Service
-      // Order Service sẽ tự gọi Product Service để check stock và trừ stock
-      items: items.map(i => ({
-        productId: i.id,
-        name:      i.name,
-        qty:       i.qty,
-        price:     i.price
-      })),
-      total
-    }
+    setSubmitting(true);
 
     try {
-      const { data } = await createOrder(payload)
-      // Order Service returns { orderId, status: 'created' }
-      clearCart()
-      navigate(`/order-success?orderId=${data.orderId}`)
+      // --- Khi có BE thật, thay đoạn mock này ---
+      // const payload = {
+      //   customer: form,
+      //   items: cart.map(i => ({ productId: i.id, qty: i.qty, price: i.price })),
+      //   total: totalPrice,
+      // };
+      // const { data } = await createOrder(payload);
+      // const orderId = data.orderId;
+      // ------------------------------------------
+
+      // Mock: giả lập delay network
+      await new Promise((r) => setTimeout(r, 1400));
+      const orderId = "ORD-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+
+      dispatch({ type: "CLEAR" });
+      onOrderSuccess({ orderId, customer: { ...form }, items: [...cart], total: totalPrice });
+      onNavigate("success");
+
     } catch (err) {
-      // Order Service returns error when Product Service reports out of stock
-      // err.response.data.message = 'Product X is out of stock'
-      const msg = err.response?.data?.message || 'Failed to place order, please try again later'
-      setError(msg)
+      // BE trả lỗi hết hàng: err.response.data.message
+      const msg = err?.response?.data?.message || "Order failed. Please try again.";
+      onShowToast(msg, "error");
     } finally {
-      setLoading(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto', padding: 24 }}>
-      <h2>Checkout</h2>
+    <div
+      style={{
+        maxWidth: 900,
+        margin: "0 auto",
+        padding: "32px 24px",
+        display: "grid",
+        gridTemplateColumns: "1fr 360px",
+        gap: 24,
+        alignItems: "start",
+      }}
+    >
+      {/* ---- Left: Form ---- */}
+      <div>
+        <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 24, color: "#0f172a" }}>
+          Information
+        </h2>
 
-      {['name', 'phone', 'address'].map(field => (
-        <div key={field} style={{ marginBottom: 14 }}>
-          <label style={{ display: 'block', marginBottom: 4, fontSize: 14, color: '#555' }}>
-            {{ name: 'Name', phone: 'Phone', address: 'Address' }[field]}
-          </label>
-          <input
-            name={field} value={form[field]} onChange={handleChange}
-            style={{ width: '100%', padding: '10px 12px', borderRadius: 8,
-              border: '1px solid #ddd', fontSize: 14, boxSizing: 'border-box' }}
-          />
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: 14,
+            border: "1px solid #e2e8f0",
+            padding: "24px 28px",
+            marginBottom: 20,
+          }}
+        >
+          <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 18, color: "#374151" }}>
+            Information
+          </h3>
+
+          {FIELDS.map((f) => (
+            <div key={f.key} style={{ marginBottom: 16 }}>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#374151",
+                  marginBottom: 6,
+                }}
+              >
+                {f.label}
+              </label>
+              <input
+                value={form[f.key]}
+                placeholder={f.placeholder}
+                onChange={(e) => setForm((p) => ({ ...p, [f.key]: e.target.value }))}
+                style={{
+                  width: "100%",
+                  padding: "10px 14px",
+                  borderRadius: 8,
+                  border: "1.5px solid #e2e8f0",
+                  fontSize: 14,
+                  color: "#0f172a",
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+              />
+            </div>
+          ))}
         </div>
-      ))}
 
-      <div style={{ background: '#f8f8f8', borderRadius: 8, padding: 16, marginBottom: 16 }}>
-        <h4 style={{ marginBottom: 8 }}>Order Summary</h4>
-        {items.map(i => (
-          <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 6 }}>
-            <span>{i.name} × {i.qty}</span>
-            <span>{(i.price * i.qty).toLocaleString('vi-VN')}₫</span>
-          </div>
-        ))}
-        <div style={{ borderTop: '1px solid #eee', marginTop: 8, paddingTop: 8,
-          display: 'flex', justifyContent: 'space-between', fontWeight: 600 }}>
-          <span>Total</span>
-          <span>{total.toLocaleString('vi-VN')}₫</span>
+        <div
+          style={{
+            background: "#f0fdf4",
+            borderRadius: 12,
+            border: "1px solid #bbf7d0",
+            padding: "14px 18px",
+            fontSize: 13,
+            color: "#166534",
+          }}
+        >
+          ✅ Cash on Delivery (COD) — Check the product before payment
         </div>
       </div>
 
-      {error && (
-        <div style={{ background: '#fff0f0', border: '1px solid #fca5a5',
-          borderRadius: 8, padding: 12, marginBottom: 14, color: '#b91c1c', fontSize: 14 }}>
-          {error}
-        </div>
-      )}
+      {/* ---- Right: Order summary ---- */}
+      <div style={{ position: "sticky", top: 74 }}>
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: 14,
+            border: "1px solid #e2e8f0",
+            padding: "20px 22px",
+          }}
+        >
+          <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#0f172a" }}>
+            Order Summary ({totalItems} items)
+          </h3>
 
-      <button
-        onClick={handleSubmit} disabled={loading}
-        style={{ width: '100%', padding: '12px 0', background: loading ? '#aaa' : '#2563eb',
-          color: '#fff', border: 'none', borderRadius: 8, fontSize: 16, cursor: loading ? 'not-allowed' : 'pointer' }}
-      >
-        {loading ? 'Processing...' : 'Confirm Order'}
-      </button>
+          {cart.map((item) => (
+            <div
+              key={item.id}
+              style={{ display: "flex", gap: 12, marginBottom: 12, alignItems: "center" }}
+            >
+              <img
+                src={item.image}
+                style={{ width: 48, height: 36, objectFit: "cover", borderRadius: 6 }}
+              />
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "#0f172a", lineHeight: 1.3 }}>
+                  {item.name}
+                </p>
+                <p style={{ fontSize: 12, color: "#94a3b8" }}>x{item.qty}</p>
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#1d4ed8", whiteSpace: "nowrap" }}>
+                {fmt(item.price * item.qty)}
+              </span>
+            </div>
+          ))}
+
+          <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: 14, marginTop: 4 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 800, fontSize: 16 }}>
+              <span>Total</span>
+              <span style={{ color: "#1d4ed8" }}>{fmt(totalPrice)}</span>
+            </div>
+          </div>
+
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            style={{
+              marginTop: 16,
+              width: "100%",
+              padding: "13px 0",
+              background: submitting ? "#93c5fd" : "#2563eb",
+              color: "#fff",
+              border: "none",
+              borderRadius: 10,
+              fontWeight: 700,
+              fontSize: 15,
+              cursor: submitting ? "not-allowed" : "pointer",
+            }}
+          >
+            {submitting ? "Processing..." : "Place Order Confirmation →"}
+          </button>
+
+          <button
+            onClick={() => onNavigate("cart")}
+            style={{
+              marginTop: 8,
+              width: "100%",
+              padding: "9px 0",
+              background: "none",
+              color: "#64748b",
+              border: "1px solid #e2e8f0",
+              borderRadius: 10,
+              fontSize: 13,
+              cursor: "pointer",
+            }}
+          >
+            ← Return to cart
+          </button>
+        </div>
+      </div>
     </div>
-  )
+  );
 }

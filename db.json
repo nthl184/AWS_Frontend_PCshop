@@ -1,0 +1,13 @@
+{
+  "products": [
+    { "id": 1, "name": "RTX 4070 Super",       "category": "GPU",       "price": 16900000, "stock": 5,  "image": "https://placehold.co/280x180/1e1b4b/818cf8?text=RTX+4070+Super",  "desc": "12GB GDDR6X, 2475MHz boost" },
+    { "id": 2, "name": "Ryzen 7 7800X3D",      "category": "CPU",       "price": 9800000,  "stock": 8,  "image": "https://placehold.co/280x180/172554/60a5fa?text=Ryzen+7+7800X3D", "desc": "8 cores, 5.0GHz, AM5" },
+    { "id": 3, "name": "Kingston Fury 32GB",   "category": "RAM",       "price": 2100000,  "stock": 20, "image": "https://placehold.co/280x180/052e16/4ade80?text=Kingston+32GB",   "desc": "DDR5 6000MHz, CL36" },
+    { "id": 4, "name": "Samsung 990 Pro 1TB",  "category": "SSD",       "price": 3200000,  "stock": 12, "image": "https://placehold.co/280x180/1c1917/a8a29e?text=Samsung+990+Pro", "desc": "NVMe PCIe 4.0, 7450MB/s" },
+    { "id": 5, "name": "ASUS ROG B650-F",      "category": "Mainboard", "price": 6500000,  "stock": 3,  "image": "https://placehold.co/280x180/1a1a2e/7c3aed?text=ROG+B650-F",     "desc": "AM5, DDR5, WiFi 6E" },
+    { "id": 6, "name": "Corsair RM850x",       "category": "PSU",       "price": 3800000,  "stock": 7,  "image": "https://placehold.co/280x180/1c0a00/fb923c?text=Corsair+RM850x",  "desc": "850W 80+ Gold, Full modular" },
+    { "id": 7, "name": "RTX 4060 Ti",          "category": "GPU",       "price": 10500000, "stock": 0,  "image": "https://placehold.co/280x180/1e1b4b/a78bfa?text=RTX+4060+Ti",    "desc": "8GB GDDR6, 2535MHz boost" },
+    { "id": 8, "name": "Intel Core i7-14700K", "category": "CPU",       "price": 8900000,  "stock": 6,  "image": "https://placehold.co/280x180/172554/93c5fd?text=i7-14700K",      "desc": "20 cores, 5.6GHz, LGA1700" }
+  ],
+  "orders": []
+}

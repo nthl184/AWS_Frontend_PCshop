@@ -1,44 +1,107 @@
-import { useEffect, useState } from 'react'
-import { getProducts } from '../api/productAPI'
-import { useCartStore } from '../store/CartStore'
+import { useState } from "react";
+import { CATEGORIES } from "../db";
+import { useEffect, useState } from "react";
+import { getProducts } from "../api/productAPI";
+import { useCart } from "../store/CartStore";
+import ProductCard from "../components/ProductCard";
 
-export default function HomePage() {
-  const [products, setProducts] = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState(null)
-  const addItem = useCartStore(s => s.addItem)
+export default function HomePage({ search, onShowToast }) {
+  const [cat, setCat] = useState("All");
+  const { dispatch } = useCart();
 
-  useEffect(() => {
-    getProducts()
-      .then(res => setProducts(res.data))
-      .catch(() => setError('Error fetching products'))
-      .finally(() => setLoading(false))
-  }, [])
 
-  if (loading) return <p>Loading...</p>
-  if (error)   return <p style={{ color: 'red' }}>{error}</p>
+const [products, setProducts] = useState([]);
+const [loading, setLoading]   = useState(true);
+
+useEffect(() => {
+  getProducts()
+    .then(res => setProducts(res.data))
+    .catch(err => console.error(err))
+    .finally(() => setLoading(false));
+}, []);
+
+if (loading) return <p style={{ padding: 40 }}>Loading...</p>;
+  // --------------------------------------
+
+  const filtered = products.filter(
+    (p) =>
+      (cat === "All" || p.category === cat) &&
+      p.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleAddToCart = (product) => {
+    dispatch({ type: "ADD", item: product });
+    onShowToast(`Added ${product.name} to cart`);
+  };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 20, padding: 24 }}>
-      {products.map(p => (
-        <div key={p.id} style={{ border: '1px solid #eee', borderRadius: 10, padding: 16 }}>
-          <img src={p.image} alt={p.name} style={{ width: '100%', borderRadius: 6 }} />
-          <h3>{p.name}</h3>
-          <p style={{ color: '#888', fontSize: 13 }}>{p.category}</p>
-          <p style={{ fontWeight: 600 }}>{p.price.toLocaleString('vi-VN')}₫</p>
-          <p style={{ fontSize: 13, color: p.stock > 0 ? 'green' : 'red' }}>
-            {p.stock > 0 ? `Have ${p.stock} items` : 'Out of stock'}
-          </p>
+    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 24px" }}>
+      {/* Hero */}
+      <div
+        style={{
+          background: "linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)",
+          borderRadius: 16,
+          padding: "36px 40px",
+          marginBottom: 32,
+          color: "#fff",
+        }}
+      >
+        <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 8 }}>
+              PC Shop
+        </h1>
+        <p style={{ color: "#94a3b8", fontSize: 16 }}>
+          GPU · CPU · RAM · SSD · Mainboard · PSU — Gruantee in 36 months!
+        </p>
+      </div>
+
+      {/* Category filter */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
+        {CATEGORIES.map((c) => (
           <button
-            onClick={() => addItem(p)}
-            disabled={p.stock === 0}
-            style={{ marginTop: 8, width: '100%', padding: '8px 0', borderRadius: 6,
-              background: p.stock > 0 ? '#2563eb' : '#ccc', color: '#fff', border: 'none', cursor: p.stock > 0 ? 'pointer' : 'not-allowed' }}
+            key={c}
+            onClick={() => setCat(c)}
+            style={{
+              padding: "7px 18px",
+              borderRadius: 20,
+              border: "1.5px solid",
+              borderColor: cat === c ? "#2563eb" : "#e2e8f0",
+              background: cat === c ? "#2563eb" : "#fff",
+              color: cat === c ? "#fff" : "#475569",
+              fontWeight: cat === c ? 600 : 400,
+              fontSize: 14,
+              cursor: "pointer",
+            }}
           >
-            Add to Cart
+            {c}
           </button>
-        </div>
-      ))}
+        ))}
+      </div>
+
+      {/* Product grid */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+          gap: 20,
+        }}
+      >
+        {filtered.map((p) => (
+          <ProductCard key={p.id} product={p} onAddToCart={handleAddToCart} />
+        ))}
+
+        {filtered.length === 0 && (
+          <div
+            style={{
+              gridColumn: "1 / -1",
+              textAlign: "center",
+              padding: 60,
+              color: "#94a3b8",
+            }}
+          >
+            No products found.
+          </div>
+        )}
+      </div>
     </div>
-  )
+  );
 }
