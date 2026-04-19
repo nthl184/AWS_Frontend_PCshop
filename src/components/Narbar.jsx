@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useCartStore } from '../store/cartStore'
+import { useCartStore } from '../store/CartStore'
 
 export default function Navbar() {
   const items = useCartStore(s => s.items)
