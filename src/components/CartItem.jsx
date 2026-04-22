@@ -1,4 +1,4 @@
-import { fmt } from "../db";
+import { fmt } from "../constants";
 import { useCart } from "../store/CartStore";
 
 export default function CartItem({ item }) {
@@ -15,7 +15,7 @@ export default function CartItem({ item }) {
       }}
     >
       <img
-        src={item.image}
+        src={item.product_image}
         alt={item.name}
         style={{ width: 72, height: 52, objectFit: "cover", borderRadius: 8 }}
       />

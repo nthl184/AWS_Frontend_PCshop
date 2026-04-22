@@ -1,5 +1,4 @@
 import axios from "axios";
-import { MOCK_PRODUCTS } from '../data/mock';
 // Khi có BE thật: đổi baseURL thành địa chỉ Product Service
 const client = axios.create({
   baseURL: import.meta.env.VITE_PRODUCT_URL || "http://localhost:3001",

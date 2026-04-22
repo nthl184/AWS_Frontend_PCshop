@@ -20,7 +20,8 @@ If you are developing a production application, we recommend using TypeScript wi
 
 1. npm install (cài dependencies)
     npm install react-router-dom axios zustand
-    npm install -D json-server
-2. npm run dev (chạy vite)
-
-3. npm run mock:product (run database)
+2. 
+    ter1: npx json-server db.json --port 3001
+    ter 2: npm install express cors axios
+            npm install -D uuid
+    ter 3: npm run dev 

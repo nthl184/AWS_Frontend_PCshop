@@ -5,7 +5,7 @@ import Toast            from "./components/Toast";
 import HomePage         from "./pages/HomePage";
 import CartPage         from "./pages/CartPage";
 import CheckoutPage     from "./pages/CheckoutPage";
-import OrderSuccessPage from "./pages/OrderSuccess";
+import OrderSuccessPage from "./pages/OrderSuccessPage";
 
 export default function App() {
   const [page, setPage]           = useState("home");
